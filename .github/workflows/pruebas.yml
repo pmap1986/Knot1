@@ -1,0 +1,69 @@
+# Cada cambio corre todas las pruebas en la nube y deja las evidencias con pantallazos.
+# Esto es un pipeline: lo construiremos paso a paso en la S10.
+name: Pruebas
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verificar la clase (pruebas base, retos y hallazgos)
+        id: verificar
+        continue-on-error: true
+        run: npm run verificar-clase
+      - name: Armar las evidencias
+        if: always()
+        run: node scripts/evidencias.js
+      - name: Guardar las evidencias
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          path: evidencias.html
+          archive: false
+      - name: Preparar la publicación
+        if: always() && github.repository == 'coach1-knotacademy/knot-qa-framework'
+        run: node scripts/construir-sitio.js
+      - name: Subir el sitio
+        if: always() && github.repository == 'coach1-knotacademy/knot-qa-framework'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: sitio
+      - name: Marcar el resultado
+        if: steps.verificar.outcome == 'failure'
+        run: |
+          echo "Hay pruebas en rojo. Abre el resumen de arriba o evidencias.html: puede ser un reto a medias o un hallazgo nuevo."
+          exit 1
+
+  publicar:
+    needs: pruebas
+    if: always() && github.repository == 'coach1-knotacademy/knot-qa-framework'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v5
+        with:
+          timeout: 300000

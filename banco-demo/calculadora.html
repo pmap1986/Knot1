@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>¿Vale la pena automatizar? · Calculadora</title><style>
+:root{--ink:#1d2130;--muted:#5d6272;--cyan:#d6fbfd;--yellow:#fffccb}body{font-family:system-ui,sans-serif;background:#f4f6fb;color:var(--ink);margin:0;padding:20px}main{max-width:900px;margin:auto}h1{margin:.2em 0}
+select,input{font:600 16px system-ui}#cCaso{padding:8px;border:2px solid var(--ink);border-radius:8px;margin:6px 0 14px}.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}.campos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.campos label{font-weight:600;font-size:14px}.campos input{width:100%;box-sizing:border-box;padding:8px;border:2px solid var(--ink);border-radius:8px;background:var(--yellow);margin-top:3px}
+.medidas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.medidas div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:8px}.medidas small{display:block;font-size:12px;color:var(--muted);font-weight:600}.medidas b{font-size:22px}.decision{margin-top:10px;border:3px solid var(--ink);border-radius:12px;padding:12px;font-size:22px;font-weight:800;text-align:center}.decision.ya{background:#d3f9d8}.decision.despues{background:var(--yellow)}.decision.capa{background:var(--cyan)}.decision.no{background:#ffe3e3}.small{color:var(--muted)}.ysi{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}.ysi button{padding:7px 10px;border:2px solid var(--ink);border-radius:8px;background:#fff;cursor:pointer;font-weight:600}
+</style></head><body><main><h1>¿Vale la pena automatizar?</h1><p>Misma cuenta de la matriz del curso, en horas y a 6 meses. Nada de lo que escribes sale de tu navegador. <b>Sin datos del cliente.</b></p>
+<select id="cCaso" aria-label="Caso"></select><div class="calc"><div class="campos">
+<label>Veces al mes, a mano<input data-c="eje" type="number" min="0" step="any"></label><label>Minutos a mano<input data-c="min" type="number" min="0" step="any"></label><label>Horas de automatizar<input data-c="aut" type="number" min="0" step="any"></label><label>Mantenimiento, h/mes<input data-c="man" type="number" min="0" step="any"></label><label>Riesgo (1–5)<input data-c="r" type="number" min="1" max="5"></label><label>Estabilidad (1–5)<input data-c="e" type="number" min="1" max="5"></label><label>Datos y ambiente (1–5)<input data-c="d" type="number" min="1" max="5"></label></div>
+<div><div class="medidas"><div><small>A mano, 6 meses</small><b id="cL"></b></div><div><small>Automatizado, 6 meses</small><b id="cM"></b></div><div><small>ROI</small><b id="cR"></b></div><div><small>Se paga en</small><b id="cE"></b></div><div><small>Puntaje</small><b id="cK"></b></div></div><div id="cD" class="decision"></div><p id="cLee" class="small"></p></div></div>
+<div class="ysi"><b>¿Y si…?</b><button data-si="trimestre">entregan cada trimestre</button><button data-si="inestable">el ambiente es inestable</button><button data-si="cambia">la pantalla cambia cada sprint</button><button data-si="doble">automatizar tarda el doble</button><button data-si="reset">volver</button></div>
+<p class="small"><b>ROI</b> = (a mano − automatizado) ÷ automatizado. <b>Puntaje</b> = 40 % riesgo + 30 % estabilidad + 30 % datos y ambiente. <b>Se paga en</b> = horas de automatizar ÷ (ahorro al mes − mantenimiento al mes).</p></main>
+<script>
+(() => {
+  const HORIZONTE = 6, UMBRAL = 3.5;
+  const r1 = (x) => Math.round(x * 10) / 10, r2 = (x) => Math.round(x * 100) / 100;
+  function calcular({ eje, min, aut, man, r, e, d }) {
+    const K = r2(r * 0.4 + e * 0.3 + d * 0.3), L = r1(eje * min / 60 * HORIZONTE), M = r1(aut + man * HORIZONTE);
+    const ROI = M > 0 ? (L - M) / M : null, ahorro = eje * min / 60 - man;
+    const E = ahorro > 0 ? r1(aut / ahorro) : null;
+    let D, C;
+    if (ROI !== null && K >= UMBRAL && ROI > 0) { D = 'Automatizar ya'; C = 'ya'; }
+    else if (ROI !== null && ROI > 0) { D = 'Automatizar después'; C = 'despues'; }
+    else if (K >= 4) { D = 'Revisar la capa o mantener manual'; C = 'capa'; }
+    else { D = 'No automatizar'; C = 'no'; }
+    return { K, L, M, ROI, E, D, C };
+  }
+  const num = (x) => String(x).replace('.', ',');
+  const roiTxt = (x) => x === null ? '–' : num(r2(x).toFixed ? (Math.round(x * 10) / 10) : x);
+  const pagaTxt = (x) => x === null ? 'nunca' : x < 0.5 ? 'días' : num(x) + (x === 1 ? ' mes' : ' meses');
+  const CASOS = [
+    ['Transferencia con OTP · UI', { eje: 20, min: 12, aut: 6, man: 1.5, r: 5, e: 3, d: 3 }],
+    ['El 4x1000 · unit', { eje: 40, min: 15, aut: 1, man: 0.1, r: 4, e: 5, d: 5 }],
+    ['Login con clave errada · API', { eje: 20, min: 5, aut: 1.5, man: 0.2, r: 3, e: 5, d: 4 }],
+    ['Pantalla en rediseño · UI', { eje: 4, min: 10, aut: 8, man: 4, r: 2, e: 1, d: 2 }],
+    ['Mi caso', { eje: 4, min: 30, aut: 8, man: 0.5, r: 3, e: 3, d: 3 }],
+  ];
+  const sel = document.getElementById('cCaso'), entradas = [...document.querySelectorAll('[data-c]')];
+  CASOS.forEach(([t], i) => sel.add(new Option(t, i)));
+  const pintar = () => {
+    const v = {}; entradas.forEach((c) => { v[c.dataset.c] = parseFloat(c.value) || 0; });
+    const x = calcular(v), $ = (id) => document.getElementById(id);
+    $('cL').textContent = num(x.L) + ' h'; $('cM').textContent = num(x.M) + ' h'; $('cR').textContent = roiTxt(x.ROI); $('cE').textContent = pagaTxt(x.E); $('cK').textContent = num(x.K);
+    $('cD').textContent = x.D; $('cD').className = 'decision ' + x.C;
+    $('cLee').textContent = x.ROI === null ? '' : x.ROI > 0 ? `En 6 meses recuperas lo invertido y un ${Math.round(x.ROI * 100)} % más.` : x.ROI === 0 ? 'En 6 meses apenas empata: no gana nada.' : 'En 6 meses no alcanza a pagarse: cuesta más de lo que ahorra.';
+  };
+  const cargar = (v) => { entradas.forEach((c) => { c.value = v[c.dataset.c]; }); pintar(); };
+  sel.onchange = () => cargar(CASOS[sel.value][1]);
+  entradas.forEach((c) => c.addEventListener('input', pintar));
+  const leer = () => { const v = {}; entradas.forEach((c) => { v[c.dataset.c] = parseFloat(c.value) || 0; }); return v; };
+  document.querySelectorAll('[data-si]').forEach((b) => b.onclick = () => {
+    const v = leer();
+    if (b.dataset.si === 'trimestre') v.eje = r1(v.eje / 6);
+    if (b.dataset.si === 'inestable') { v.d = 1; v.man = r1(v.man * 2); }
+    if (b.dataset.si === 'cambia') { v.e = 1; v.man = r1(v.man * 3); }
+    if (b.dataset.si === 'doble') v.aut = r1(v.aut * 2);
+    cargar(b.dataset.si === 'reset' ? CASOS[sel.value][1] : v);
+  });
+  cargar(CASOS[0][1]);
+
+  window.__calcular = calcular;
+})();
+</script></body></html>

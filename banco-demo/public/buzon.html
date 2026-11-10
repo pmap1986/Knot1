@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Banco Demo · Buzón de SMS</title><link rel="stylesheet" href="/estilos.css"><script src="/comun.js"></script></head><body>
+<div class="practica">Sitio de práctica de un curso. No es un banco real: no escribas datos reales.</div>
+<header><strong>📨 Buzón de SMS de pruebas</strong></header>
+<main><h1>Mensajes recibidos</h1><p class="ayuda">Simula la herramienta interna donde el equipo de pruebas consulta los códigos enviados.</p>
+<label for="usuario">Usuario</label><input id="usuario" autocomplete="off">
+<button class="principal" id="buscar">Buscar</button>
+<table><thead><tr><th>Mensaje</th></tr></thead><tbody id="mensajes"></tbody></table></main>
+<script>
+document.getElementById('buscar').onclick = async () => {
+  const { datos } = await api('/api/buzon?usuario=' + encodeURIComponent(document.getElementById('usuario').value.trim()));
+  document.getElementById('mensajes').innerHTML = datos.map((m) => `<tr><td>${m.mensaje}</td></tr>`).join('');
+};
+</script></body></html>

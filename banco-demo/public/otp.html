@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Banco Demo · Código</title><link rel="stylesheet" href="/estilos.css"><script src="/comun.js"></script></head><body>
+<div class="practica">Sitio de práctica de un curso. No es un banco real: no escribas datos reales.</div>
+<header><strong>🏦 Banco Demo</strong><a href="/buzon" target="_blank">Buzón de SMS (pruebas)</a></header>
+<main><h1>Confirma que eres tú</h1><p>Enviamos un código de seguridad por SMS a tu celular.</p>
+<form id="f" novalidate>
+<label for="codigo">Código de seguridad</label><input id="codigo" inputmode="numeric" autocomplete="off">
+<button class="principal">Validar</button>
+<div id="error" class="error" role="alert" hidden></div>
+</form></main>
+<script>
+document.getElementById('f').onsubmit = async (e) => {
+  e.preventDefault(); pintarError('');
+  const { estado, datos } = await api('/api/otp', { method: 'POST', body: JSON.stringify({ idDesafio: sessionStorage.getItem('idDesafio'), codigo: document.getElementById('codigo').value.trim() }) });
+  if (estado !== 200) return pintarError(datos.error);
+  localStorage.setItem('token', datos.token);
+  localStorage.setItem('nombre', datos.nombre);
+  location.href = '/inicio';
+};
+</script></body></html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Banco Demo · Ingreso</title><link rel="stylesheet" href="/estilos.css"><script src="/comun.js"></script></head><body>
+<div class="practica">Sitio de práctica de un curso. No es un banco real: no escribas datos reales.</div>
+<header><strong>🏦 Banco Demo</strong><a href="/buzon" target="_blank">Buzón de SMS (pruebas)</a></header>
+<main><h1>Ingresa a tu banca</h1>
+<form id="f" novalidate>
+<label for="usuario">Usuario</label><input id="usuario" autocomplete="off">
+<label for="clave">Clave</label><input id="clave" type="password">
+<button class="principal">Entrar</button>
+<div id="error" class="error" role="alert" hidden></div>
+</form>
+<p class="ayuda">Práctica: ana / Clave123 · luis / Clave123 · bloqueado / Clave123</p></main>
+<script>
+document.getElementById('f').onsubmit = async (e) => {
+  e.preventDefault(); pintarError('');
+  const usuario = document.getElementById('usuario').value.trim();
+  const { estado, datos } = await api('/api/login', { method: 'POST', body: JSON.stringify({ usuario, clave: document.getElementById('clave').value }) });
+  if (estado !== 200) return pintarError(datos.error);
+  sessionStorage.setItem('idDesafio', datos.idDesafio);
+  sessionStorage.setItem('usuario', usuario);
+  location.href = '/otp';
+};
+</script></body></html>

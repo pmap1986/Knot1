@@ -1,0 +1,13 @@
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+resultados.json
+evidencias.html
+evidencias/
+ejecucion.log
+sitio/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

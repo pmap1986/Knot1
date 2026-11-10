@@ -1,0 +1,13 @@
+body{font-family:system-ui,sans-serif;background:#f4f6fb;color:#1d2130;margin:0}
+  .practica{background:#fff3bf;color:#5c4400;text-align:center;padding:6px;font-size:14px;font-weight:600}
+header{background:#27306b;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+header a,header button{color:#fff;background:none;border:1px solid #fff;border-radius:6px;padding:6px 12px;text-decoration:none;font-size:14px;cursor:pointer;margin-left:8px}
+main{max-width:640px;margin:32px auto;background:#fff;border-radius:12px;padding:28px;box-shadow:0 2px 10px #0002}
+label{display:block;font-weight:600;margin:14px 0 4px}
+label.linea{font-weight:400;display:flex;gap:8px;align-items:center}
+input:not([type=checkbox]),select{width:100%;padding:10px;font-size:16px;box-sizing:border-box;border:1px solid #aab;border-radius:6px}
+button.principal{margin-top:18px;background:#27306b;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-size:16px;cursor:pointer}
+.error{background:#ffe3e3;color:#a61e1e;border-radius:6px;padding:10px;margin-top:14px}
+.exito{background:#d3f9d8;color:#1b5e20;border-radius:6px;padding:10px;margin-top:14px}
+table{width:100%;border-collapse:collapse;margin-top:12px}th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd}
+.ayuda{color:#667;font-size:14px}

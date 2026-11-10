@@ -1,0 +1,54 @@
+# Comprueba la preparación en un Windows real, con Windows PowerShell 5.1.
+name: Scripts en Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'preparar.cmd'
+      - 'package.json'
+      - 'playwright.config.ts'
+      - '.github/workflows/windows.yml'
+
+jobs:
+  scripts:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v7
+      - name: Los scripts se pueden leer sin errores
+        run: |
+          foreach ($archivo in Get-ChildItem scripts\*.ps1) {
+            $errores = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($archivo.FullName, [ref]$null, [ref]$errores)
+            if ($errores) { $errores | Out-String | Write-Host; throw "Errores en $($archivo.Name)" }
+            Write-Host "OK $($archivo.Name)"
+          }
+      - name: Preparar sin Node ni Chromium disponibles
+        run: |
+          # Simula un equipo restringido: sin Node en el PATH y sin poder descargar Chromium.
+          Rename-Item "$env:ProgramFiles\nodejs" 'nodejs_oculto'
+          $env:Path = (($env:Path -split ';') | Where-Object { $_ -notmatch 'nodejs|npm|hostedtoolcache.*node' }) -join ';'
+          $env:PLAYWRIGHT_DOWNLOAD_HOST = 'https://127.0.0.1:9'
+          . .\scripts\preparar-playwright.ps1
+          if (-not $global:PreparacionOk) { throw 'preparar-playwright no termino bien' }
+          if ($env:PW_CHANNEL -ne 'msedge') { throw "Se esperaba msedge y quedo: $env:PW_CHANNEL" }
+          if ((Get-Location).Path -ne $env:GITHUB_WORKSPACE) { throw "Se esperaba la raiz del repo y quedo: $((Get-Location).Path)" }
+          Write-Host "Node usado: $((Get-Command node).Source)"
+          Rename-Item "$env:ProgramFiles\nodejs_oculto" 'nodejs'
+      - name: Preparar en condiciones normales
+        run: |
+          . .\scripts\preparar-playwright.ps1
+          if (-not $global:PreparacionOk) { throw 'preparar-playwright no termino bien' }
+      - name: preparar.cmd arranca
+        shell: cmd
+        run: echo exit | preparar.cmd
+      - name: Una prueba de UI y las pruebas de unidad, en Windows
+        run: |
+          node scripts\verificar-clase.js --proyectos=ui,unidad
+          if ($LASTEXITCODE -ne 0) { throw 'la verificacion fallo' }

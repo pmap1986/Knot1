@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Banco Demo · Inicio</title><link rel="stylesheet" href="/estilos.css"><script src="/comun.js"></script></head><body>
+<div class="practica">Sitio de práctica de un curso. No es un banco real: no escribas datos reales.</div>
+<header><strong>🏦 Banco Demo</strong><span><span id="nombre"></span><a href="/transferir">Transferir</a><button id="salir">Salir</button></span></header>
+<main><h1>Mis cuentas</h1>
+<p id="cargando">Cargando saldos…</p>
+<div id="error" class="error" role="alert" hidden></div>
+<table id="tabla" hidden><thead><tr><th>Cuenta</th><th>Tipo</th><th>Saldo</th></tr></thead><tbody></tbody></table></main>
+<script>
+exigirSesion();
+api('/api/cuentas').then(({ estado, datos }) => {
+  document.getElementById('cargando').hidden = true;
+  if (estado !== 200) return pintarError('No pudimos cargar tus saldos. Intenta más tarde.');
+  document.querySelector('tbody').innerHTML = datos.map((c) => `<tr><td>${c.numero}</td><td>${c.tipo}</td><td>${pesos(c.saldo)}</td></tr>`).join('');
+  document.getElementById('tabla').hidden = false;
+}).catch(() => { document.getElementById('cargando').hidden = true; pintarError('No pudimos cargar tus saldos. Intenta más tarde.'); });
+</script></body></html>

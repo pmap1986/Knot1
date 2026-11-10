@@ -1,0 +1,10 @@
+{
+  "name": "knot-qa-framework",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "postCreateCommand": "npm ci && npx playwright install --with-deps chromium",
+  "containerEnv": { "CI": "true" },
+  "customizations": {
+    "codespaces": { "openFiles": ["retos/S03.md", "src/paginas/PaginaLogin.ts"] },
+    "vscode": { "extensions": ["ms-playwright.playwright"] }
+  }
+}

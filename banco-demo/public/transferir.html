@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Banco Demo · Transferir</title><link rel="stylesheet" href="/estilos.css"><script src="/comun.js"></script></head><body>
+<div class="practica">Sitio de práctica de un curso. No es un banco real: no escribas datos reales.</div>
+<header><strong>🏦 Banco Demo</strong><span><span id="nombre"></span><a href="/inicio">Mis cuentas</a><button id="salir">Salir</button></span></header>
+<main><h1>Transferir</h1>
+<form id="f" novalidate>
+<label for="origen">Cuenta de origen</label>
+<select id="origen"><option value="1000000001">Ahorros · 1000000001</option><option value="1000000002">Corriente · 1000000002</option></select>
+<label for="destino">Cuenta destino</label><input id="destino" inputmode="numeric" autocomplete="off">
+<label for="monto">Monto</label><input id="monto" inputmode="numeric" autocomplete="off">
+<label class="linea"><input id="acepto" type="checkbox"> Acepto el cobro del 4x1000</label>
+<button class="principal">Transferir</button>
+<div id="error" class="error" role="alert" hidden></div>
+</form>
+<div id="comprobante" class="exito" role="status" hidden></div></main>
+<script>
+exigirSesion();
+document.getElementById('f').onsubmit = async (e) => {
+  e.preventDefault(); pintarError(''); document.getElementById('comprobante').hidden = true;
+  if (!document.getElementById('acepto').checked) return pintarError('Debes aceptar el cobro del 4x1000');
+  const { estado, datos } = await api('/api/transferencias', { method: 'POST', body: JSON.stringify({
+    origen: document.getElementById('origen').value,
+    destino: document.getElementById('destino').value.trim(),
+    monto: Number(document.getElementById('monto').value.trim()),
+  }) });
+  if (estado !== 201) return pintarError(datos.error);
+  const c = document.getElementById('comprobante');
+  c.innerHTML = `<strong>Transferencia exitosa</strong><br>Comprobante: <span id="numero">${datos.comprobante}</span><br>Monto: <span id="valor">${pesos(datos.monto)}</span><br>4x1000: <span id="gmf">${pesos(datos.gmf)}</span><br>Total debitado: <span id="total">${pesos(datos.total)}</span>`;
+  c.hidden = false;
+};
+</script></body></html>
